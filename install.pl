@@ -197,7 +197,7 @@ step 'Prepare spawner binary', sub {
         $version = $tag;
     }
     else {
-        my $uri1 = "http://api.github.com/repos/$repo_owner/$remote_repo/releases/latest";
+        my $uri1 = "https://api.github.com/repos/$repo_owner/$remote_repo/releases/latest";
         my $ff1 = File::Fetch->new(uri => $uri1);
         $File::Fetch::BLACKLIST = ['iosock'];
         my $response;
@@ -211,7 +211,7 @@ step 'Prepare spawner binary', sub {
     # Use non-empty file if already present.
     unlink $file unless -s $file;
     # File::Fetch does not understand https protocol name but redirect works.
-    my $uri = "http://github.com/$repo_owner/$remote_repo/releases/download/$version/$file";
+    my $uri = "https://github.com/$repo_owner/$remote_repo/releases/download/$version/$file";
     print "    Link: $uri\n" if $opts{verbose};
     if ($proxy) {
         $ENV{http_proxy} = $ENV{https_proxy} = $proxy;
