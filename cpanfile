@@ -3,3 +3,4 @@ requires 'File::Copy::Recursive';
 requires 'JSON::XS';
 requires 'Test::Exception';
 requires 'XML::Parser::Expat';
+requires 'LWP::Protocol::https';

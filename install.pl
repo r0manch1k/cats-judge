@@ -116,7 +116,6 @@ step 'Verify optional modules', sub {
         DBI
         HTTP::Request::Common
         IPC::Run
-        LWP::Protocol::https
         LWP::UserAgent
         SQL::Abstract
         Term::ReadKey

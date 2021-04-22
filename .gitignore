@@ -10,3 +10,4 @@ log/*
 config.xml
 judge.lock
 tmp
+.idea
