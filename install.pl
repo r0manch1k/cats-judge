@@ -13,11 +13,14 @@ use IPC::Cmd;
 use List::Util qw(max);
 
 use lib File::Spec->catdir($FindBin::Bin, 'lib');
+use lib File::Spec->catdir($FindBin::Bin, 'lib', 'cats-problem');
 
 use CATS::ConsoleColor qw(colored);
 use CATS::DevEnv::Detector::Utils qw(globq run);
 use CATS::FileUtil;
+use CATS::Judge::ConfigFile qw(cfg_file);
 use CATS::Loggers;
+use CATS::MaybeDie qw(maybe_die);
 use CATS::Spawner::Platform;
 
 $| = 1;
@@ -38,7 +41,7 @@ USAGE
 }
 
 GetOptions(
-    \my %opts,
+     \my %opts,
     'step=i@',
     'bin=s',
     'devenv=s',
@@ -60,11 +63,7 @@ if ($opts{step}) {
     printf "Will only run steps: %s\n", join ' ', sort { $a <=> $b } @steps;
 }
 
-sub maybe_die {
-    $opts{force} or die @_;
-    print @_;
-    print ' overridden by --force';
-}
+CATS::MaybeDie::init(%opts);
 
 my $fu = CATS::FileUtil->new({ logger => CATS::Logger::Die->new });
 my $fr = CATS::FileUtil->new({
@@ -86,17 +85,23 @@ sub step($&) {
     }
 }
 
-sub step_copy {
+sub my_copy {
     my ($from, $to) = @_;
-    step "Copy $from -> $to", sub {
-        -e $to and maybe_die "Destination already exists: $to";
-        copy($from, $to) or maybe_die $!;
-    };
+    print "\nCopying: $from -> $to" if $opts{verbose};
+    -e $to and maybe_die "Destination already exists: $to";
+    copy($from, $to) or maybe_die $!;
+}
+
+sub load_cfg {
+    require CATS::Judge::Config;
+    CATS::Judge::Config->import;
+    CATS::Judge::Config->new(root => $FindBin::Bin)->load(file => $CATS::Judge::ConfigFile::main);
 }
 
 step 'Verify install', sub {
     -f 'judge.pl' && -d 'lib' or die 'Must run from cats-judge directory';
-    -f 'config.xml' and maybe_die 'Seems to be already installed';
+    eval { load_cfg; } and maybe_die 'Seems to be already installed';
+    say $@ if $opts{verbose};
 };
 
 step 'Verify git', sub {
@@ -138,11 +143,12 @@ step 'Detect development environments', sub {
     IPC::Cmd->can_capture_buffer or print ' IPC::Cmd is inadequate, will use emulation';
     print "\n";
     CATS::DevEnv::Detector::Utils::disable_error_dialogs();
+    my %de_cache;
     for (globq(File::Spec->catfile($FindBin::Bin, qw[lib CATS DevEnv Detector *.pm]))) {
         my ($name) = /(\w+)\.pm$/;
         next if $name =~ /^(Utils|Base)$/ || $opts{devenv} && $name !~ qr/$opts{devenv}/i;
         require $_;
-        my $d = "CATS::DevEnv::Detector::$name"->new;
+        my $d = "CATS::DevEnv::Detector::$name"->new(cache => \%de_cache);
         printf "    Detecting %s:\n", $d->name;
         for (values %{$d->detect}){
             printf "      %s %-12s %s\n",
@@ -151,8 +157,9 @@ step 'Detect development environments', sub {
             for (sort keys %{$ep}) {
                 printf "        %12s %s\n", $_, $ep->{$_};
             }
-            push @detected_DEs, { path => $_->{path}, code => $d->code, extra_paths => $ep }
-                if $_->{preferred};
+            $_->{preferred} or next;
+            $de_cache{$name} = { path => $_->{path}, code => $d->code, extra_paths => $ep };
+            push @detected_DEs, $de_cache{$name};
         }
     }
 };
@@ -162,6 +169,10 @@ step 'Detect proxy', sub {
     $proxy = CATS::DevEnv::Detector::Utils::detect_proxy() or return;
     $proxy =~ /^http/ or $proxy = "http://$proxy";
     print " $proxy ";
+    if ($ENV{HTTP_PROXY} // '' eq $proxy) {
+        $proxy = '#env:HTTP_PROXY';
+        print " -> $proxy ";
+    }
 };
 
 my $platform;
@@ -221,50 +232,67 @@ step 'Prepare spawner binary', sub {
     my $sp_path = File::Spec->catfile($dir, $sp);
     printf "    Downloaded: %d bytes\n", -s $zip_file if $opts{verbose};
     unzip($zip_file => $sp_path, Name => $sp, BinModeOut => 1)
-        or maybe_die "Can't unzip $zip_file";
+        or maybe_die "Can't unzip $zip_file: $UnzipError";
     chmod 0744, $sp_path if $^O ne 'MSWin32';
     unlink $zip_file;
 };
 
-my @p = qw(lib cats-problem CATS);
-step_copy(File::Spec->catfile(@p, 'Config.pm.template'), File::Spec->catfile(@p, 'Config.pm'));
+step 'Copy Config.pm', sub {
+    my @p = qw(lib cats-problem CATS);
+    my_copy(File::Spec->catfile(@p, 'Config.pm.template'), File::Spec->catfile(@p, 'Config.pm'));
+};
 
-step_copy('config.xml.template', 'config.xml');
+step 'Copy configuration from templates', sub {
+    for (qw(autodetect local local_devenv)) {
+        my $fn = cfg_file("$_.xml");
+        my_copy("$fn.template", $fn);
+    }
+};
 
-step 'Save configuration', sub {
+sub transform_file {
+    my ($name, $transform_line) = @_;
+    open my $fin, '<', $name or die "Can't open $name: $!";
+    open my $fout, '>', "$name.tmp" or die "Can't open $name.tmp: $!";
+    while (<$fin>) {
+        my $orig = $_;
+        my $result = $transform_line->($_);
+        print $fout $result;
+        print "\n    $orig -> $result" if $opts{verbose} && $result ne $orig;
+    }
+    close $fin;
+    close $fout;
+    copy $name, "$name.bak" or die "backup: $!";
+    rename "$name.tmp", $name or die "rename: $!";
+}
+
+step 'Update configuration', sub {
     @detected_DEs || defined $proxy || defined $platform or return;
-    open my $conf_in, '<', 'config.xml' or die "Can't open config.xml";
-    open my $conf_out, '>', 'config.xml.tmp' or die "Can't open config.xml.tmp";
+
+    transform_file(cfg_file('local.xml'), sub {
+        defined $proxy and s~(\s+proxy=")"~$1$proxy"~ for $_[0];
+        $_[0];
+    });
     my %path_idx;
     $path_idx{$_->{code}} = $_ for @detected_DEs;
-    my $flag = 0;
-    my $sp = $platform ?
-        File::Spec->rel2abs(CATS::Spawner::Platform::get_path($platform)) : undef;
-    while (<$conf_in>) {
-        my $orig = $_;
-        s~(\s+proxy=")"~$1$proxy"~ if defined $proxy;
-        s~(\sname="#spawner"\s+value=")[^"]+"~$1$sp"~ if defined $platform;
-        if (($platform // '') ne 'win32') {
-            s~(\sname="#gcc_stack"\s+value=")[^"]+"~$1"~;
-            s~compile='"#delphi"\s"-U#delphi_units"\s-CC\s"%full_name"'~compile='"#fpc" -Mdelphi "%full_name" -o"%name.exe"'~;
-
-            # Hack: Use G++ instead of Visual C++
-            s~extension='cpp'~extension='cpp1'~;
-            s~extension='cxx'~extension='cpp cxx'~;
+    transform_file(cfg_file('autodetect.xml'), sub {
+        for ($_[0]) {
+            if (/^<!--.* install.pl -->$/) {
+                s/used/generated/;
+            }
+            elsif (my ($code, $extra) = /de_code_autodetect="(\d+)(?:\.([a-zA-Z]+))?"/) {
+                if (my $de = $path_idx{$code}) {
+                    my $path = $extra ? $de->{extra_paths}->{$extra} : $de->{path};
+                    s/value="[^"]*"/value="$path"/;
+                }
+            }
+            elsif (my ($code_enable) = /<de code="(\d+)" enabled="(?:\d+)"/) {
+                if (my $de = $path_idx{$code_enable}) {
+                    s/enabled="\d+"/enabled="1"/;
+                }
+            }
         }
-
-        $flag = $flag ? $_ !~ m/<!-- END -->/ : $_ =~ m/<!-- This code is touched by install.pl -->/;
-        my ($code, $extra) = /de_code_autodetect="(\d+)(?:\.([a-zA-Z]+))?"/;
-        if ($flag && $code && (my $de = $path_idx{$code})) {
-            my $path = $extra ? $de->{extra_paths}->{$extra} : $de->{path};
-            s/value="[^"]*"/value="$path"/;
-        }
-        print $conf_out $_;
-        print "\n    $orig -> $_" if $opts{verbose} && $orig ne $_;
-    }
-    close $conf_in;
-    close $conf_out;
-    rename 'config.xml.tmp', 'config.xml' or die "rename: $!";
+        $_[0];
+    });
 };
 
 sub parse_xml_file {
@@ -275,16 +303,8 @@ sub parse_xml_file {
 }
 
 sub get_dirs {
-    -e 'config.xml' or die 'Missing config.xml';
-    my ($modulesdir, $cachedir);
-    parse_xml_file('config.xml', Start => sub {
-        my ($p, $el, %atts) = @_;
-        $el eq 'judge' or return;
-        $modulesdir = $atts{modulesdir};
-        $cachedir = $atts{cachedir};
-        $p->finish;
-    });
-    ($modulesdir, $cachedir);
+    my $cfg = load_cfg;
+    ($cfg->modulesdir, $cfg->cachedir);
 }
 
 sub check_module {

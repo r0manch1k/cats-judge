@@ -36,6 +36,7 @@ rem https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-5.0.200-windows-x
 %PBOX_HOME%\bin\wget --output-document %TEMP%\dotnet.zip https://download.visualstudio.microsoft.com/download/pr/761159fa-2843-4abe-8052-147e6c873a78/77658948a9e0f7bc31e978b6bc271ec8/dotnet-sdk-5.0.200-win-x64.zip
 %PBOX_HOME%\bin\7za x -oC:\Lang\dotnet %TEMP%\dotnet.zip
 setx DOTNET_ROOT C:\Lang\dotnet
+setx DOTNET_CLI_TELEMETRY_OPTOUT 1
 
 rem Pbox provides only PascalABC 2.22
 mkdir C:\Lang\pascalabc
@@ -67,7 +68,7 @@ if exist "%PYTHON3_HOME%\python.exe" (
     %PBOX_HOME%\bin\wget --output-document %TEMP%\sqlite3.zip http://www.sqlite.org/2018/sqlite-dll-win64-x64-3250200.zip
     %PBOX_HOME%\bin\7za x -y -o"%PYTHON3_HOME%\DLLs" %TEMP%\sqlite3.zip
     rem Includes numpy
-    "%PYTHON3_HOME%\python.exe" -m pip install pandas sklearn
+    "%PYTHON3_HOME%\python.exe" -m pip install pandas sklearn opencv-python matplotlib
     rem Install cython
     "%PYTHON3_HOME%\python.exe" -m pip install cython
     copy /y cython.bat "%PYTHON3_HOME%\cython.bat"
@@ -80,6 +81,9 @@ mkdir C:\Lang\logisim
 mkdir C:\Lang\digitalsim
 %PBOX_HOME%\bin\wget --output-document %TEMP%\digitalsim.zip https://github.com/hneemann/Digital/releases/download/v0.24/Digital.zip
 %PBOX_HOME%\bin\7za e -oC:\Lang\digitalsim %TEMP%\digitalsim.zip */*.jar
+
+%PBOX_HOME%\bin\wget --output-document %TEMP%\nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip
+%PBOX_HOME%\bin\7za e -oC:\Lang\nasm %TEMP%\nasm.zip
 
 rem IDE only, separate GUI action required to install C++
 choco install visualstudio2015community -y --execution-timeout 27000

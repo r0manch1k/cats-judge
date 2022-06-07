@@ -4,7 +4,7 @@ use warnings;
 use File::Spec;
 use FindBin;
 use Test::Exception;
-use Test::More tests => 25;
+use Test::More tests => 28;
 
 use lib File::Spec->catdir($FindBin::Bin, '..', 'lib');
 use lib File::Spec->catdir($FindBin::Bin, '..', 'lib', 'cats-problem');
@@ -53,7 +53,7 @@ my $end = q~</judge>~;
 {
     my $c = make_cfg;
     $c->load(
-        src => qq~$default<de code="333" run="aaa"/>$end~,
+        src => qq~$default<de code="333" run="aaa" enabled="1"/>$end~,
         override => { 'DEs.333.run' => 'bbb' });
     is $c->DEs->{333}->{run}, 'bbb', 'override path';
 }
@@ -109,13 +109,13 @@ my $end = q~</judge>~;
     throws_ok { $c->load(src => qq~$default<include file="qqq"/>$end~) } qr/qqq/, 'include bad file';
     $c->load(src => qq~$default
       <judge name="zzz"/>
-      <de code="111" compile="zzz" run="qqq" />
+      <de code="111" compile="zzz" run="qqq" enabled="1" />
       <include file="t/cfg_include.xml" />
       <de code="111" check="zzz#inc 1" />
       $end~);
     is $c->name, 'included', 'include name';
     is_deeply $c->DEs->{111}, {
-        compile => 'bbb', run => 'qqq', check => 'zzzabc 1' }, 'include de';
+        compile => 'bbb', run => 'qqq', check => 'zzzabc 1', enabled => 1 }, 'include de';
 }
 
 {
@@ -129,8 +129,25 @@ my $end = q~</judge>~;
 }
 
 {
+    my $c = make_cfg(include_overrides => {
+      'zzz.xml' => '<?xml version="1.0"?><judge name="zzz"/>',
+    });
+    $c->load(src => qq~$default<define name="#f" value="zzz.xml"/><include file="#f"/>$end~);
+    is $c->name, 'zzz', 'include define';
+}
+
+{
     *ap = *CATS::Judge::Config::apply_params;
     is ap('zzz', {}), 'zzz', 'no params';
     is ap('z%zz', { z => 1 }), 'z1z', 'apply 1';
     is ap('z%zz', { zz => 2, z => 1 }), 'z2', 'apply length';
+}
+
+{
+    my $JUDGE_TEST_ENV = 'JUDGE_TEST_ENV02349582';
+    my $c = make_cfg;
+    my $def = 'abc#env:JUDGE_TEST_ENV def';
+    throws_ok { $c->apply_defines($def) } qr/JUDGE_TEST_ENV/, 'define no env';
+    local $ENV{JUDGE_TEST_ENV} = $JUDGE_TEST_ENV;
+    is $c->apply_defines($def), "abc$JUDGE_TEST_ENV def", 'define env';
 }

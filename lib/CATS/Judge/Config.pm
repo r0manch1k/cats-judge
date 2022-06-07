@@ -8,6 +8,7 @@ use XML::Parser::Expat;
 
 use CATS::Config;
 use CATS::Constants;
+use CATS::Spawner::Platform;
 
 sub dir_fields() { qw(cachedir logdir modulesdir solutionsdir resultsdir rundir workdir) }
 sub required_fields() {
@@ -39,6 +40,15 @@ sub special_fields() { qw(checkers def_DEs defines DEs) }
 sub security_fields() { qw(cats_password) }
 sub compile_fields() { @cats::limits_fields }
 sub default_limits_fields() { qw(deadline_add deadline_min idle_time) }
+sub color_fields() { qw(
+    child_stderr
+    child_stdout
+    install_fail
+    install_ok
+    install_start
+    problem_cached
+    testing_start
+) }
 sub de_fields() { qw(
     check
     compile
@@ -46,6 +56,7 @@ sub de_fields() { qw(
     compile_error_flag
     compile_precompile
     compile_rename_regexp
+    enabled
     encoding
     extension
     generate
@@ -62,7 +73,7 @@ sub param_fields() { required_fields, optional_fields, special_fields }
 sub import {
     for (
         required_fields, optional_fields, special_fields, security_fields,
-        qw(compile default_limits)
+        qw(compile default_limits color)
     ) {
         no strict 'refs';
         my $x = $_;
@@ -74,7 +85,10 @@ sub new {
     my ($class, %p) = @_;
     $p{root} or die 'root required';
     my $self = {
-        root => $p{root}, defines => { '#rootdir' => $p{root} }, DEs => {}, checkers => {}, def_DEs => {},
+        root => $p{root}, defines => {
+            '#rootdir' => $p{root},
+            '#platform' => CATS::Spawner::Platform::get,
+        }, DEs => {}, checkers => {}, def_DEs => {},
         include => { stack => [], overrides => $p{include_overrides} // {} },
     };
     bless $self, $class;
@@ -87,6 +101,7 @@ sub apply_defines {
     my $defines = $self->{defines};
     $value =~ s/$_/$defines->{$_}/g
         for sort { length $b <=> length $a || $a cmp $b } keys %$defines;
+    $value =~ s/#env:([a-zA-Z0-9_]+)/$ENV{$1} || die 'Unknown environment ', $1/eg;
     $value;
 }
 
@@ -95,6 +110,13 @@ sub _read_attributes {
     for (@fields) {
         $dest->{$_} = $self->apply_defines($atts->{$_}) if exists $atts->{$_};
     }
+}
+
+sub _check_color {
+    my ($colors, $name) = @_;
+    $colors->{$name} or return;
+    my $c = $colors->{$name};
+    Term::ANSIColor::colorvalid($c) or die "Invalid color for $name: '$c'";
 }
 
 sub load_part {
@@ -112,6 +134,10 @@ sub load_part {
         },
         default_limits => sub {
             $self->_read_attributes($self->{default_limits} //= {}, $_[0], default_limits_fields);
+        },
+        color => sub {
+            $self->_read_attributes($self->{color} //= {}, $_[0], color_fields);
+            _check_color($self->{color}, $_) for color_fields;
         },
         de => sub {
             my $code = $_[0]->{code} or die 'de: code required';
@@ -134,7 +160,7 @@ sub load_part {
         },
         include => sub {
             $_[0]->{file} or die 'include: file required';
-            $self->load_file($_[0]->{file});
+            $self->load_file($self->apply_defines($_[0]->{file}));
         },
     };
 
@@ -183,6 +209,13 @@ sub load {
     $self->_override($p{override});
     defined $self->{$_} or die "config: undefined $_" for required_fields;
     $_ = File::Spec->rel2abs($_, cats_dir) for @{$self}{dir_fields()};
+    for (keys %{$self->DEs}) {
+        $self->DEs->{$_}->{enabled} or delete $self->DEs->{$_};
+    }
+    for (keys %{$self->def_DEs}) {
+        $self->DEs->{$self->def_DEs->{$_}} or delete $self->def_DEs->{$_};
+    }
+    $self;
 }
 
 sub print_helper {
