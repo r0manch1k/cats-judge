@@ -28,6 +28,7 @@
     run='#perl #copy_cat -i _cats_output_copy -o %output_file -m %original_output'
     generate=''
     check=''
+    safe="1"
     enabled="1"/>
 
 <!-- Special: zip code -->
@@ -55,6 +56,7 @@
     compile=''
     run='#perl #copy_cat -i "%full_name" -m *STDOUT -l %test_rank'
     extension='quiz'
+    safe="1"
     enabled="1"/>
 
 <!-- Cross-platform C/C++ compiler -->
@@ -402,6 +404,17 @@
     check='"#pypy" %full_name %checker_args'
     extension='pypy'/>
 
+<!-- R -->
+<de
+    code="511"
+    compile='"#R_lang" --slave --vanilla -e "x&lt;-parse(&apos;%full_name&apos;)" LANG=C'
+    run='"#R_lang" --slave --vanilla -f "%full_name" LANG=C'
+    run_interactive='"#R_lang" --slave --vanilla -f "%full_name" LANG=C'
+    generate='"#R_lang" --slave --vanilla -f "%full_name" LANG=C --args %args'
+    validate='"#R_lang" --slave --vanilla -f "%full_name" LANG=C --args "%test_input" %args'
+    check='"#R_lang" --slave --vanilla -f "%full_name" LANG=C --args %checker_args'
+    extension='r'/>
+
 <!-- Unity -->
 <de
     code="602"
@@ -422,6 +435,13 @@
     compile='"#unreal_engine4" BuildCookRun -project="#rootdir\run\Project\Project.uproject" -noP4 -platform=Win64 -clientconfig=Development -cook -build -pak -stage -archive -archivedirectory="#rootdir\run"'
     run='.\WindowsNoEditor\Project.exe'
     extension=''/>
+
+<!-- LaTeX -->
+<de
+    code="606"
+    compile='"#pdflatex" --interaction=nonstopmode "%full_name"'
+    run='"#latexmk" --pdflatex --jobname=%output_noext "%full_name"'
+    extension='tex'/>
 
 <!-- Digital simulator -->
 <de

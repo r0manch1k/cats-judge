@@ -21,13 +21,14 @@
 <define name="#nodejs" de_code_autodetect="507" value="C:\Lang\nodejs\node.exe" />
 <define name="#prolog" de_code_autodetect="509" value="C:\Lang\swipl\bin\swipl.exe" />
 <define name="#pypy" de_code_autodetect="510" value="C:\Lang\pypy\pypy3.exe" />
+<define name="#R_lang" de_code_autodetect="511" value="C:\Lang\r\bin\R.exe" />
 
 <define name="#qbasic" de_code_autodetect="301" value="C:\Lang\QBasic\1.0\QBASIC.EXE" />
 <define name="#freeBasic" de_code_autodetect="302" value="C:\Lang\freebasic\fbc.exe" />
 
 <define name="#ms_cpp" de_code_autodetect="103" value="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\cl.exe" />
-<define name="#gnu_c" de_code_autodetect="105" value="C:\Lang\mingw-w64-7\bin\gcc.exe" />
-<define name="#gnu_cpp" de_code_autodetect="102" value="C:\Lang\mingw-w64-7\bin\g++.exe" />
+<define name="#gnu_c" de_code_autodetect="105" value="C:\Lang\gcc11\bin\gcc.exe" />
+<define name="#gnu_cpp" de_code_autodetect="102" value="C:\Lang\gcc11\bin\g++.exe" />
 <define name="#bcc" de_code_autodetect="104" value="#env:comspec /C ..\bcc.cmd" />
 <define name="#clang" de_code_autodetect="106" value="C:\Lang\clang\bin\clang++.exe" />
 
@@ -44,6 +45,10 @@
 <define name="#unity" de_code_autodetect="602" value="C:\Program Files\Unity\Hub\Editor\2018.3.0f2\Editor\Unity.exe" />
 <define name="#blender" de_code_autodetect="604" value="C:\Program Files\Blender Foundation\Blender 2.81\blender.exe" />
 <define name="#unreal_engine4" de_code_autodetect="605" value="C:\Dev\UE_4.24\Engine\Binaries\DotNET\AutomationTool.exe" />
+
+<define name="#latex" de_code_autodetect="606" value="C:\Lang\TinyTeX\bin\win32" />
+<define name="#pdflatex" de_code_autodetect="606.pdf" value="#latex\pdflatex.exe" />
+<define name="#latexmk" de_code_autodetect="606.mk" value="#latex\latexmk.exe" />
 
 <de code="101" enabled="0" />
 <de code="102" enabled="0" />
@@ -76,9 +81,11 @@
 <de code="507" enabled="0" />
 <de code="509" enabled="0" />
 <de code="510" enabled="0" />
+<de code="511" enabled="0" />
 <de code="602" enabled="0" />
 <de code="604" enabled="0" />
 <de code="605" enabled="0" />
+<de code="606" enabled="0" />
 <de code="651" enabled="0" />
 <de code="652" enabled="0" />
 <de code="653" enabled="0" />

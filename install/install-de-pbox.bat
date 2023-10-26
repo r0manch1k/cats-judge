@@ -16,7 +16,7 @@ set PATH=%PATH%;%FIREBIRD_HOME%;C:\Lang\perl\perl\bin
 setx PATH %PATH%
 call cpanm DBD::Firebird
 
-call pbox install mingw-w64-7 --homedir=C:\Lang\mingw-w64-7
+call pbox install gcc11-64-winlibs --homedir=C:\Lang\gcc11
 call pbox install jdk8 --homedir=C:\Lang\jdk8
 call pbox install kotlin --homedir=C:\Lang\kotlin
 call pbox install python3 --homedir=C:\Lang\python3
@@ -33,7 +33,9 @@ call pbox install go --homedir=C:\Lang\go
 rem call pbox install dotnet-core-sdk --homedir=C:\Lang\dotnet
 
 rem https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-5.0.200-windows-x64-binaries
-%PBOX_HOME%\bin\wget --output-document %TEMP%\dotnet.zip https://download.visualstudio.microsoft.com/download/pr/761159fa-2843-4abe-8052-147e6c873a78/77658948a9e0f7bc31e978b6bc271ec8/dotnet-sdk-5.0.200-win-x64.zip
+rem %PBOX_HOME%\bin\wget --output-document %TEMP%\dotnet.zip https://download.visualstudio.microsoft.com/download/pr/761159fa-2843-4abe-8052-147e6c873a78/77658948a9e0f7bc31e978b6bc271ec8/dotnet-sdk-5.0.200-win-x64.zip
+rem https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.401-windows-x64-binaries
+%PBOX_HOME%\bin\wget --output-document %TEMP%\dotnet.zip https://download.visualstudio.microsoft.com/download/pr/aa0b6cf3-c5dc-40ff-8b2f-f2970ca7b9e3/5b4a9999ea41ca5897e01a3e0e1accad/dotnet-sdk-6.0.401-win-x64.zip
 %PBOX_HOME%\bin\7za x -oC:\Lang\dotnet %TEMP%\dotnet.zip
 setx DOTNET_ROOT C:\Lang\dotnet
 setx DOTNET_CLI_TELEMETRY_OPTOUT 1
@@ -59,20 +61,29 @@ choco install erlang -ia "'/D=C:\Lang\erlang'"
 rem Change Prolog's assocated extension, since default .pl conflicts with Perl.
 %TEMP%\swi-prolog.exe /S /EXT=pro /INSTDIR=C:\Lang\swipl
 
+%PBOX_HOME%\bin\wget.exe --output-document %TEMP%\R-win.exe https://mirror.truenetwork.ru/CRAN/bin/windows/base/R-4.2.1-win.exe
+if exist %TEMP%\R-win.exe %TEMP%\R-win.exe /verysilent /dir=C:\Lang\r
+
 mkdir C:\git\
 call pbox install git --homedir=C:\git
+
+if not exist "%PYTHON3_HOME%\python.exe" (
+rem pbox has 3.9.7, this version supports Win7
+%PBOX_HOME%\bin\wget --output-document %TEMP%\python.exe https://github.com/adang1345/PythonWin7/raw/master/3.10.7/python-3.10.7-amd64-full.exe
+%TEMP%\python.exe /quiet InstallAllUsers=1 TargetDir="C:\Lang\python3"
+setx PYTHON3_HOME C:\Lang\python3
+)
 
 rem PYTHON3_HOME is set by pbox installer.
 if exist "%PYTHON3_HOME%\python.exe" (
     rem Update sqlite3 library
-    %PBOX_HOME%\bin\wget --output-document %TEMP%\sqlite3.zip http://www.sqlite.org/2018/sqlite-dll-win64-x64-3250200.zip
+    %PBOX_HOME%\bin\wget --output-document %TEMP%\sqlite3.zip https://www.sqlite.org/2022/sqlite-dll-win64-x64-3390300.zip
     %PBOX_HOME%\bin\7za x -y -o"%PYTHON3_HOME%\DLLs" %TEMP%\sqlite3.zip
     rem Includes numpy
-    "%PYTHON3_HOME%\python.exe" -m pip install pandas sklearn opencv-python matplotlib
+    "%PYTHON3_HOME%\python.exe" -m pip install pandas sklearn opencv-python matplotlib requests scikit-image
     rem Install cython
     "%PYTHON3_HOME%\python.exe" -m pip install cython
     copy /y cython.bat "%PYTHON3_HOME%\cython.bat"
-    "%PYTHON3_HOME%\python.exe" -m pip install requests
 )
 
 mkdir C:\Lang\logisim
@@ -84,6 +95,10 @@ mkdir C:\Lang\digitalsim
 
 %PBOX_HOME%\bin\wget --output-document %TEMP%\nasm.zip https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/win64/nasm-2.15.05-win64.zip
 %PBOX_HOME%\bin\7za e -oC:\Lang\nasm %TEMP%\nasm.zip
+
+%PBOX_HOME%\bin\wget --output-document %TEMP%\tinytex.zip https://github.com/rstudio/tinytex-releases/releases/download/v2022.11/TinyTeX-v2022.11.zip
+rem 7z from PBOX does not support -spe
+C:\Lang\7-Zip\7z x -spe -oC:\Lang\TinyTeX %TEMP%\tinytex.zip
 
 rem IDE only, separate GUI action required to install C++
 choco install visualstudio2015community -y --execution-timeout 27000

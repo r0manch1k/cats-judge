@@ -64,6 +64,10 @@ sub make_sp_params {
         d  => $p->{deadline},
         ml => $p->{memory_limit},
         wl => $p->{write_limit},
+        'active-connection-count' => $p->{active_connections},
+        'active-process-count' => $p->{active_processes},
+        u => $p->{user}->{name},
+        p => $p->{user}->{password},
         (map { +D => "{$_=$p->{env}->{$_}}" } sort keys %{$p->{env} // {}}),
     );
     ($p->{json} // $self->opts->{json} ? '--json' : ()),
@@ -219,6 +223,8 @@ my $terminate_reasons = {
     IdleTimeLimitExceeded => $TR_IDLENESS_LIMIT,
     AbnormalExitProcess => $TR_ABORT,
     TerminatedByController => $TR_CONTROLLER,
+    ActiveConnectionCountLimitExceeded => $TR_SECURITY,
+    ActiveProcessesCountLimitExceeded => $TR_SECURITY,
 };
 
 sub mb_to_bytes { defined $_[0] ? int($_[0]  * 1024 * 1024 + 0.5) : undef }
@@ -354,9 +360,10 @@ Sample JSON report
 =cut
 
     for my $ji (@$json) {
-        my $e = $ji->{SpawnerError};
+        my $errors = $ji->{SpawnerError};
+        $errors = [] if @$errors && $errors->[0] eq '<none>';
         my $tr =  $terminate_reasons->{$ji->{TerminateReason}}
-            or return $report->error("Unknown terminate reason: $ji->{TerminateReason}");
+            or die "Unknown terminate reason: $ji->{TerminateReason}";
         my $lim = $ji->{Limit};
         my $res = $ji->{Result};
         $report->add({
@@ -366,7 +373,7 @@ Sample JSON report
             security => {
                 user_name => $ji->{UserName},
             },
-            errors => (@$e == 0 || $e->[0] eq '<none>' ? [] : $e),
+            errors => $errors,
             limits => {
                 wall_clock_time => $lim->{WallClockTime},
                 user_time => $lim->{Time},
@@ -376,6 +383,7 @@ Sample JSON report
                 load_ratio => $lim->{IdlenessProcessorLoad},
             },
             terminate_reason => $tr,
+            original_terminate_reason => $ji->{TerminateReason},
             exit_status => $ji->{ExitStatus},
             exit_code => $ji->{ExitCode} // die('ExitCode not found'),
             consumed => {
