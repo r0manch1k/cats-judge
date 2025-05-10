@@ -90,7 +90,7 @@ sub step($&) {
 sub my_copy {
     my ($from, $to) = @_;
     print "\nCopying: $from -> $to" if $opts{verbose};
-    -e $to and maybe_die "Destination already exists: $to";
+    # -e $to and maybe_die "Destination already exists: $to";
     copy($from, $to) or maybe_die $!;
 }
 
@@ -180,8 +180,9 @@ step 'Detect proxy', sub {
 
 my $platform;
 step 'Detect platform', sub {
-    $platform = CATS::Spawner::Platform::get or maybe_die "Unsupported platform: $^O";
-    print " $platform" if $platform;
+    # $platform = CATS::Spawner::Platform::get or maybe_die "Unsupported platform: $^O";
+    # print " $platform" if $platform;
+    $platform="linux-amd64";
 };
 
 step 'Prepare spawner binary', sub {
@@ -240,10 +241,10 @@ step 'Prepare spawner binary', sub {
     unlink $zip_file;
 };
 
-step 'Copy Config.pm', sub {
-    my @p = qw(lib cats-problem CATS);
-    my_copy(File::Spec->catfile(@p, 'Config.pm.template'), File::Spec->catfile(@p, 'Config.pm'));
-};
+# step 'Copy Config.pm', sub {
+#     my @p = qw(lib cats-problem CATS);
+#     my_copy(File::Spec->catfile(@p, 'Config.pm.template'), File::Spec->catfile(@p, 'Config.pm'));
+# };
 
 step 'Copy configuration from templates', sub {
     for (qw(autodetect local local_devenv)) {
