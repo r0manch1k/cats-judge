@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<judge
+    name=""
+    proxy=""
+    api="DirectDatabase"
+>
+<!-- api: WebApi | DirectDatabase -->
+
+<security
+    cats_password=""
+    sp_user=""
+    sp_password=""
+/>
+
+</judge>

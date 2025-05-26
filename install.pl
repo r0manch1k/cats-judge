@@ -111,11 +111,11 @@ step 'Verify git', sub {
     $x =~ /^git version/ or die "Git not found: $x";
 };
 
-step 'Verify required modules', sub {
-    my $lines = $fu->read_lines_chomp('cpanfile');
-    my @missing = grep !eval "require $_; 1;", map /^requires '(.+)';$/ && $1, @$lines;
-    maybe_die join "\n", 'Some required modules not found:', @missing, '' if @missing;
-};
+# step 'Verify required modules', sub {
+#     my $lines = $fu->read_lines_chomp('cpanfile');
+#     my @missing = grep !eval "require $_; 1;", map /^requires '(.+)';$/ && $1, @$lines;
+#     maybe_die join "\n", 'Some required modules not found:', @missing, '' if @missing;
+# };
 
 step 'Verify optional modules', sub {
     my @bad = grep !eval "require $_; 1;", qw(

@@ -15,7 +15,7 @@ use File::Spec;
 
 our $db = {
     name => 'db_name',
-    driver => 'postgres',
+    driver => 'Pg',
     user => 'db_user',
     password => 'db_pass',
     host => 'postgres',
