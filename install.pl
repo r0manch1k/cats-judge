@@ -345,16 +345,39 @@ step 'Install cats-modules', sub {
         @{$fu->read_lines_chomp([ $cats_modules_dir, 'modules.txt'])};
     my $jcmd = [ 'cmd', 'j.'. ($^O eq 'MSWin32' ? 'cmd' : 'sh') ];
     print "\n";
+    # for my $m (@modules) {
+    #     my $run = $fr->run([ $jcmd, 'install', '--problem', $m->{dir} ]);
+    #     $run->ok or print $run->err, next;
+    #     print @{$run->full} if $opts{verbose};
+    #     parse_xml_file($m->{xml}, Start => sub {
+    #         my ($p, $el, %atts) = @_;
+    #         exists $atts{export} or return;
+    #         $m->{total}++;
+    #         my $module_xml = File::Spec->catfile($modulesdir, "$atts{export}.xml");
+    #         $m->{success}++ if check_module($module_xml, $cachedir);
+    #     });
+    # }
     for my $m (@modules) {
         my $run = $fr->run([ $jcmd, 'install', '--problem', $m->{dir} ]);
-        $run->ok or print $run->err, next;
+        unless ($run->ok) {
+            print colored("FAILED to install $m->{name}: ".$run->err, 'red'), "\n";
+            next;
+        }
         print @{$run->full} if $opts{verbose};
+        if (!-e $m->{xml}) {
+            print colored("XML not found for $m->{name}: $m->{xml}", 'yellow'), "\n";
+            next;
+        }
         parse_xml_file($m->{xml}, Start => sub {
             my ($p, $el, %atts) = @_;
             exists $atts{export} or return;
             $m->{total}++;
             my $module_xml = File::Spec->catfile($modulesdir, "$atts{export}.xml");
-            $m->{success}++ if check_module($module_xml, $cachedir);
+            unless (check_module($module_xml, $cachedir)) {
+                print colored("Module not ready: $module_xml", 'yellow'), "\n";
+            } else {
+                $m->{success}++;
+            }
         });
     }
     my $w = max(map length $_->{name}, @modules);

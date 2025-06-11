@@ -16,37 +16,37 @@ WORKDIR /app
 
 COPY . .
 
-RUN cd dockerfiles/fpc-3.2.2.x86_64-linux && ./install.sh
+# Might be wrong for different os
+RUN cd dockerfiles/judge/fpc-3.2.2.x86_64-linux && ./install.sh
 
 RUN cpanm --notest --installdeps .
 
-COPY dockerfiles/Config.pm /app/lib/cats-problem/CATS/Config.pm
+COPY dockerfiles/judge/Config.pm /app/lib/cats-problem/CATS/Config.pm
 
 ENV comspec "/bin/bash"
 
 RUN perl install.pl
 
-COPY dockerfiles/local.xml /app/config/local.xml
+COPY dockerfiles/judge/local.xml /app/config/local.xml
 
-RUN rm -rf Spawner
-
-RUN mkdir Spawner
+RUN rm -rf Spawner && mkdir Spawner
 
 RUN git clone https://github.com/r0manch1k/spawner2-cgroups2.git Spawner
-
-WORKDIR /app/Spawner
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-RUN cargo build --release
+WORKDIR /app/Spawner
 
-# RUN ./create_cgroups.sh
+RUN cargo build --release
 
 WORKDIR /app
 
-RUN cp Spawner/target/release/sp Spawner/
+# Might be wrong for different os
+RUN mkdir -p /app/spawner-bin/linux-i386
+RUN cp /app/Spawner/target/release/sp /app/spawner-bin/linux-i386/sp
+RUN chmod +x /app/spawner-bin/linux-i386/sp
 
 ENV PATH "$PATH:/app/cmd/"
 

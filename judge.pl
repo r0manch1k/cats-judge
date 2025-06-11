@@ -1523,13 +1523,36 @@ elsif ($cli->command =~ /^(hash)$/) {
 }
 elsif ($cli->command =~ /^(install|run)$/) {
     for my $rr (@{$cli->opts->{run} || [ '' ]}) {
+        # my $wd = Cwd::cwd();
+        # $judge->{run} = $rr;
+        # $judge->set_def_DEs($cfg->def_DEs);
+        # my $r = $judge->select_request;
+        # my $state = prepare_problem($r);
+        # my $problem = $judge->get_problem($r->{problem_id});
+        # test_problem($r, $problem) if $r && ($r->{src} // '') ne '' && $state != $cats::st_unhandled_error;
+        # $judge->{rid_to_fname}->{$r->{id}} = $rr;
+        # chdir($wd);
         my $wd = Cwd::cwd();
+        log_msg("Starting install/run for rr='$rr'\n");
         $judge->{run} = $rr;
         $judge->set_def_DEs($cfg->def_DEs);
         my $r = $judge->select_request;
+        if (!$r) {
+            log_msg("No request selected for rr='$rr'\n");
+            next;
+        }
+        log_msg("Selected request: id=%s, problem_id=%s, src=%s\n",
+            $r->{id} // 'undef', $r->{problem_id} // 'undef', $r->{src} // 'undef');
         my $state = prepare_problem($r);
+        log_msg("prepare_problem returned state=%s\n", $state // 'undef');
         my $problem = $judge->get_problem($r->{problem_id});
-        test_problem($r, $problem) if $r && ($r->{src} // '') ne '' && $state != $cats::st_unhandled_error;
+        if ($r && ($r->{src} // '') ne '' && $state != $cats::st_unhandled_error) {
+            log_msg("Testing problem id=%s\n", $r->{problem_id});
+            test_problem($r, $problem);
+        } else {
+            log_msg("Skipping test_problem: src='%s', state=%s\n",
+                $r->{src} // '', $state // 'undef');
+        }
         $judge->{rid_to_fname}->{$r->{id}} = $rr;
         chdir($wd);
     }
