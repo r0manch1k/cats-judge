@@ -46,8 +46,9 @@ WORKDIR /app
 # Might be wrong for different os
 RUN mkdir -p /app/spawner-bin/linux-i386
 RUN cp /app/Spawner/target/release/sp /app/spawner-bin/linux-i386/sp
+RUN cp /app/Spawner/create_cgroups.sh /app/create_cgroups.sh
 RUN chmod +x /app/spawner-bin/linux-i386/sp
-
+RUN chmod +x /app/create_cgroups.sh
 ENV PATH "$PATH:/app/cmd/"
 
 CMD j.sh serve
