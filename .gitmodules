@@ -6,4 +6,4 @@
 	url = https://github.com/klenin/cats-modules
 [submodule "Spawner"]
 	path = Spawner
-	url = https://github.com/klenin/Spawner
+	url = https://github.com/r0manch1k/spawner2-cgroups2
