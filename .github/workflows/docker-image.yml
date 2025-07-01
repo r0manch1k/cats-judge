@@ -26,6 +26,21 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Setup environment
+        run: |
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.local
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.local
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.local
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.local
+          echo "POSTGRES_HOST=${{ secrets.JUDGE_NAME }}" >> .env.local
+        shell: bash
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Run Python script
+        run: python render.py
+
       # - name: Extract metadata (tags, labels) for Docker
       #   id: meta
       #   uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7

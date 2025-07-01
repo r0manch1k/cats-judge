@@ -14,3 +14,7 @@ config/*.bak
 judge.lock
 tmp
 .idea
+
+.env.local
+dockerfiles/judge/Config.pm
+dockerfiles/judge/local.xml
