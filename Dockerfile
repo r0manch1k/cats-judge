@@ -17,7 +17,7 @@ RUN cpanm --notest --installdeps .
 COPY dockerfiles/judge/Config.pm /app/lib/cats-problem/CATS/Config.pm
 ENV comspec="/bin/bash"
 
-RUN perl install.pl --skip 4
+RUN perl install.pl
 COPY dockerfiles/judge/local.xml /app/config/local.xml
 
 RUN rm -rf Spawner && mkdir Spawner
@@ -29,9 +29,9 @@ WORKDIR /app
 
 RUN mkdir -p /app/spawner-bin/linux-i386
 RUN cp /app/Spawner/sp /app/spawner-bin/linux-i386/sp
-RUN cp /app/Spawner/create_cgroups.sh /app/create_cgroups.sh
+RUN cp /app/Spawner/create_cgroups.sh /app/cmd/create_cgroups.sh
 RUN chmod +x /app/spawner-bin/linux-i386/sp
-RUN chmod +x /app/create_cgroups.sh
-ENV PATH="$PATH:/app/"
+RUN chmod +x /app/cmd/create_cgroups.sh
+ENV PATH="$PATH:/app/cmd/"
 
 CMD ["j.sh", "serve"]

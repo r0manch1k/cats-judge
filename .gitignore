@@ -18,3 +18,5 @@ tmp
 .env.local
 dockerfiles/judge/Config.pm
 dockerfiles/judge/local.xml
+
+venv
