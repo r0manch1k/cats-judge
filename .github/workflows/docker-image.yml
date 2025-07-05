@@ -32,7 +32,7 @@ jobs:
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.local
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.local
           echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.local
-          echo "POSTGRES_HOST=${{ secrets.JUDGE_NAME }}" >> .env.local
+          echo "JUDGE_NAME=${{ secrets.JUDGE_NAME }}" >> .env.local
         shell: bash
 
       - name: Set up Python
