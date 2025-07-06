@@ -42,10 +42,13 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
 
       - name: Render configs with environment variables
-        run: python render.py
+        run: venv/bin/python render.py
 
       # - name: Extract metadata (tags, labels) for Docker
       #   id: meta
