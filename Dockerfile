@@ -18,6 +18,7 @@ COPY dockerfiles/judge/Config.pm /app/lib/cats-problem/CATS/Config.pm
 ENV comspec="/bin/bash"
 
 RUN perl install.pl
+
 COPY dockerfiles/judge/local.xml /app/config/local.xml
 
 RUN rm -rf Spawner && mkdir Spawner

@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches: [ "master" ]
-  pull_request:
+=  pull_request:
     branches: [ "master" ]
 
 jobs:
@@ -26,22 +26,25 @@ jobs:
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      # idk if there is a better way to set env vars
       - name: Setup environment
         run: |
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.local
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.local
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.local
           echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.local
-          echo "JUDGE_NAME=${{ secrets.JUDGE_NAME }}" >> .env.local
+          echo "JUDGE_NAME=${{ secrets.JUDGE_NAME }}" >> env.local
         shell: bash
 
       - name: Set up Python
         uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Install dependencies
         run: python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 
-      - name: Run Python script
+      - name: Render configs with environment variables
         run: python render.py
 
       # - name: Extract metadata (tags, labels) for Docker
@@ -56,4 +59,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ secrets.REGISTRY_URL }}/mesenev/cats-judge:latest      
+            ${{ secrets.REGISTRY_URL }}/mesenev/cats-judge:latest
