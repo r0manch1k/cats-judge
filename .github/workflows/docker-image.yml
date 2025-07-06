@@ -50,10 +50,6 @@ jobs:
       - name: Render configs with environment variables
         run: venv/bin/python render.py
 
-      - name: Show full directory tree
-        run: |
-          echo "PWD: $(pwd)"
-          find . -type f
       # - name: Extract metadata (tags, labels) for Docker
       #   id: meta
       #   uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
@@ -64,6 +60,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
+          context: .
           push: true
           tags: |
             ${{ secrets.REGISTRY_URL }}/mesenev/cats-judge:latest
