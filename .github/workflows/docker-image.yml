@@ -44,6 +44,18 @@ jobs:
           cat .env
         shell: bash
 
+      - name: Install dependencies
+        run: |
+         python -m venv venv
+         source venv/bin/activate
+         pip install -r requirements.txt
+
+      - name: Render configs with environment variables
+        run: venv/bin/python render_test.py
+
+      - name: Test vars
+        run: cat test.pm
+        
       # - name: Set up Python
       #  uses: actions/setup-python@v5
       #  with:
