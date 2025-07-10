@@ -33,6 +33,6 @@ RUN cp /app/Spawner/sp /app/spawner-bin/linux-i386/sp
 RUN cp /app/Spawner/create_cgroups.sh /app/cmd/create_cgroups.sh
 RUN chmod +x /app/spawner-bin/linux-i386/sp
 RUN chmod +x /app/cmd/create_cgroups.sh
-ENV PATH="/app/cmd/:${PATH}"
+ENV PATH="$PATH:/app/cmd/"
 
 CMD ["j.sh", "serve"]
