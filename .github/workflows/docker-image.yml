@@ -40,7 +40,7 @@ jobs:
 
       - name: Test env
         run: |
-          echo "TEST_VAR=${{ secrets.TEST_VAR }}" >> .env.local
+          echo "TEST_VAR=${{ secrets.TEST_VAR }}" >> .env
           cat .env
         shell: bash
 
