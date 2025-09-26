@@ -1,4 +1,4 @@
-FROM freepascal/fpc:latest-buster-full
+FROM freepascal/fpc:latest-focal-full
 
 RUN apt update
 RUN apt install -y git
