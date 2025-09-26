@@ -16,12 +16,12 @@ COPY . .
 
 # Create a virtual environment
 ENV VIRTUAL_ENV=/app/venv
-RUN python3 -m venv $VIRTUAL_ENV
+CMD [ "python", "-m", "venv", "$VIRTUAL_ENV"]
 
 # Add the virtual environment's bin directory to the PATH
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install -r requirements.txt
-CMD ["python3", "render.py"]
+CMD ["python", "render.py"]
 RUN rm -rf venv
 RUN rm render.py requirements.txt
 
