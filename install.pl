@@ -111,11 +111,6 @@ step 'Verify git', sub {
     $x =~ /^git version/ or die "Git not found: $x";
 };
 
-# step 'Verify required modules', sub {
-#     my $lines = $fu->read_lines_chomp('cpanfile');
-#     my @missing = grep !eval "require $_; 1;", map /^requires '(.+)';$/ && $1, @$lines;
-#     maybe_die join "\n", 'Some required modules not found:', @missing, '' if @missing;
-# };
 
 step 'Verify optional modules', sub {
     my @bad = grep !eval "require $_; 1;", qw(
@@ -131,10 +126,10 @@ step 'Verify optional modules', sub {
     warn join "\n", 'Some optional modules not found:', @bad, '' if @bad;
 };
 
-step 'Clone submodules', sub {
-    system('git submodule update --init');
-    $? and maybe_die "Failed: $?, $!";
-};
+# step 'Clone submodules', sub {
+#     system('git submodule update --init');
+#     $? and maybe_die "Failed: $?, $!";
+# };
 
 step 'Disable Windows Error Reporting UI', sub {
     CATS::DevEnv::Detector::Utils::disable_windows_error_reporting_ui();
@@ -167,87 +162,24 @@ step 'Detect development environments', sub {
     }
 };
 
-my $proxy;
-step 'Detect proxy', sub {
-    $proxy = CATS::DevEnv::Detector::Utils::detect_proxy() or return;
-    $proxy =~ /^http/ or $proxy = "http://$proxy";
-    print " $proxy ";
-    if ($ENV{HTTP_PROXY} // '' eq $proxy) {
-        $proxy = '#env:HTTP_PROXY';
-        print " -> $proxy ";
-    }
-};
+# my $proxy;
+# step 'Detect proxy', sub {
+#     $proxy = CATS::DevEnv::Detector::Utils::detect_proxy() or return;
+#     $proxy =~ /^http/ or $proxy = "http://$proxy";
+#     print " $proxy ";
+#     if ($ENV{HTTP_PROXY} // '' eq $proxy) {
+#         $proxy = '#env:HTTP_PROXY';
+#         print " -> $proxy ";
+#     }
+# };
 
 my $platform;
 step 'Detect platform', sub {
-    # $platform = CATS::Spawner::Platform::get or maybe_die "Unsupported platform: $^O";
-    # print " $platform" if $platform;
     $platform="linux-amd64";
 };
 
-step 'Prepare spawner binary', sub {
-    $platform or maybe_die "\nDetect platform first";
-    my $dir = File::Spec->catdir('spawner-bin', $platform);
-    -e $dir ?
-        (-d $dir or maybe_die "\n$dir is not a directory") :
-        make_path $dir or maybe_die "\nCan't create directory $dir";
-
-    my $make_type = $opts{bin} // 'download';
-    $make_type =~ qr~^download(:(v(\d+\.)+\d+)(:(\w+)\/(\w+))?)?$~
-        or maybe_die 'Unknown --bin value';
-    my $version = '';
-    my $repo_owner = 'klenin';
-    my $remote_repo = 'Spawner2';
-    if ($1) {
-        $version = $2;
-        $repo_owner = $5 if $4;
-        $remote_repo = $6 if $4;
-    }
-    elsif (-d $remote_repo) {
-        # Git wants forward slash even on Windows.
-        my $tag = `git --git-dir=$remote_repo/.git describe --tag --match "v[0-9]*"`;
-        $tag =~ s/[\n\r]//g;
-        $tag =~ /^v(\d+\.)+\d+$/ or maybe_die "Spawner submodule has invalid version tag: $tag";
-        $version = $tag;
-    }
-    else {
-        my $uri1 = "https://api.github.com/repos/$repo_owner/$remote_repo/releases/latest";
-        my $ff1 = File::Fetch->new(uri => $uri1);
-        $File::Fetch::BLACKLIST = ['iosock'];
-        my $response;
-        $ff1->fetch(to => \$response) or maybe_die;
-        $response =~ /"name":"([^"]+)"/; # JSON::XS installed may be not installed yet.
-        $response or maybe_die();
-        $version = $1;
-    }
-    print $opts{verbose} ? "\n    Download spawner binary $version...\n" : " $version";
-    my $file = "$platform.zip";
-    # Use non-empty file if already present.
-    unlink $file unless -s $file;
-    # File::Fetch does not understand https protocol name but redirect works.
-    my $uri = "https://github.com/$repo_owner/$remote_repo/releases/download/$version/$file";
-    print "    Link: $uri\n" if $opts{verbose};
-    if ($proxy) {
-        $ENV{http_proxy} = $ENV{https_proxy} = $proxy;
-    }
-    my $ff = File::Fetch->new(uri => $uri);
-    my $zip_file = -e $file ? $file : $ff->fetch or maybe_die "Can't download bin files from $uri";
-    my $sp = $^O eq 'MSWin32' ? 'sp.exe' : 'sp';
-    my $sp_path = File::Spec->catfile($dir, $sp);
-    printf "    Downloaded: %d bytes\n", -s $zip_file if $opts{verbose};
-    unzip($zip_file => $sp_path, Name => $sp, BinModeOut => 1)
-        or maybe_die "Can't unzip $zip_file: $UnzipError";
-    chmod 0744, $sp_path if $^O ne 'MSWin32';
-    unlink $zip_file;
-};
-
-# step 'Copy Config.pm', sub {
-#     my @p = qw(lib cats-problem CATS);
-#     my_copy(File::Spec->catfile(@p, 'Config.pm.template'), File::Spec->catfile(@p, 'Config.pm'));
-# };
-
 step 'Copy configuration from templates', sub {
-    for (qw(autodetect local local_devenv)) {
+    for (qw(autodetect local_devenv)) {
         my $fn = cfg_file("$_.xml");
         my_copy("$fn.template", $fn);
     }
@@ -389,6 +321,6 @@ step 'Install cats-modules', sub {
     }
 };
 
-step 'Add j to path', sub {
-    print CATS::DevEnv::Detector::Utils::add_to_path(File::Spec->rel2abs('cmd'));
-};
+# step 'Add j to path', sub {
+#     print CATS::DevEnv::Detector::Utils::add_to_path(File::Spec->rel2abs('cmd'));
+# };
