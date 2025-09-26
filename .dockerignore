@@ -6,10 +6,9 @@
 COPYING
 *.cmd
 unity.bat
-.env
-.env.local
+#.env
 README.md
-dockerfiles
+#dockerfiles
 Dockerfile
 .git
 .github

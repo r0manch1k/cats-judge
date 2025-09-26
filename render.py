@@ -1,7 +1,7 @@
 import os
 from jinja2 import Template
 
-def load_env(filename=".env.local"):
+def load_env(filename=".env"):
     with open(filename) as f:
         for line in f:
             if line.strip() and not line.startswith('#'):
@@ -10,14 +10,15 @@ def load_env(filename=".env.local"):
 
 load_env()
 
-with open("./dockerfiles/judge/Config.pm.template") as f:
+with open("Config.pm.template") as f:
     template = Template(f.read())
 
-with open("./dockerfiles/judge/Config.pm", "w") as f:
+with open("Config.pm", "w") as f:
     f.write(template.render(os.environ))
 
-with open("./dockerfiles/judge/local.xml.template") as f:
+with open("local.xml.template") as f:
     template = Template(f.read())
 
-with open("./dockerfiles/judge/local.xml", "w") as f:
+with open("local.xml", "w") as f:
     f.write(template.render(os.environ))
+print("success!")

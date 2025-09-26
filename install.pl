@@ -202,12 +202,8 @@ sub transform_file {
 }
 
 step 'Update configuration', sub {
-    @detected_DEs || defined $proxy || defined $platform or return;
+    @detected_DEs ||  defined $platform or return;
 
-    transform_file(cfg_file('local.xml'), sub {
-        defined $proxy and s~(\s+proxy=")"~$1$proxy"~ for $_[0];
-        $_[0];
-    });
     my %path_idx;
     $path_idx{$_->{code}} = $_ for @detected_DEs;
     transform_file(cfg_file('autodetect.xml'), sub {
