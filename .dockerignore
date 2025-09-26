@@ -15,8 +15,6 @@ Dockerfile
 .github
 .gitignore
 .gitmodules
-render.py
-requirements.txt
 
 # User-specific stuff
 .idea/**/workspace.xml
