@@ -13,8 +13,8 @@ RUN apt install -y build-essential \
 WORKDIR /app
 
 COPY . .
-COPY dockerfiles/judge/local.xml /app/config/local.xml
-COPY dockerfiles/judge/Config.pm /app/lib/cats-problem/CATS/Config.pm
+COPY ./dockerfiles/judge/local.xml /app/config/local.xml
+COPY ./dockerfiles/judge/Config.pm /app/lib/cats-problem/CATS/Config.pm
 
 RUN cpanm --notest --installdeps .
 ENV comspec="/bin/bash"
