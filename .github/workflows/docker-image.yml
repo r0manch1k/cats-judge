@@ -33,26 +33,26 @@ jobs:
 
       - name: Setup environment
         run: |
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env.local
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.local
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.local
-          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env.local
-          echo "JUDGE_NAME=${{ secrets.JUDGE_NAME }}" >> env.local
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "JUDGE_NAME=${{ secrets.JUDGE_NAME }}" >> env
         shell: bash
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-         python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-      - name: Render configs with environment variables
-        run: venv/bin/python render.py
+#
+#      - name: Set up Python
+#        uses: actions/setup-python@v5
+#        with:
+#         python-version: '3.12'
+#
+#      - name: Install dependencies
+#        run: |
+#          python -m venv venv
+#          source venv/bin/activate
+#          pip install -r requirements.txt
+#
+#      - name: Render configs with environment variables
+#        run: venv/bin/python render.py
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
