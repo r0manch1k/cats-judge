@@ -3,13 +3,7 @@
 
 <!-- development environments (de) -->
 <!-- Special: do not compile this file, used for modules -->
-<de
-    code="1"
-    compile=''
-    run=''
-    generate=''
-    check=''
-    enabled="1"/>
+<de code="1" compile='' run='' generate='' check='' enabled="1"/>
 
 <!-- Special: unzip answers -->
 <de

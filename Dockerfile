@@ -1,4 +1,4 @@
-FROM freepascal/fpc:latest-focal-full
+FROM freepascal/fpc:3.2.2-bookworm-full
 
 RUN apt update
 RUN apt install -y git
