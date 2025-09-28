@@ -2,7 +2,7 @@
 <judge>
 <!-- This file is used by install.pl -->
 
-<define name="#spawner" value="%workdir/spawner-bin/#platform/#spawner_name"/>
+<define name="#spawner" value="%workdir/cmd/#spawner_name"/>
 
 <define name="#arch_7z" de_code_autodetect="2" value="C:\Lang\7-Zip\7z.exe" />
 <define name="#javac" de_code_autodetect="403" value="C:\Lang\jdk8\bin\javac.exe" />
