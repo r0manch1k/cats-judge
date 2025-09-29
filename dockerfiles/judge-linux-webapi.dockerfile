@@ -11,7 +11,8 @@ RUN apt-get update && \
         fp-units-base \
         fp-units-math \
         fp-units-rtl \
-        python3
+        python3 \
+        python3-numpy python3-scipy
 
 RUN git clone https://github.com/klenin/cats-judge
 WORKDIR /cats-judge
