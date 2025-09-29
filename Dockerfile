@@ -33,7 +33,7 @@ RUN perl install.pl
 RUN git init
 RUN git config --global user.name "Your Name"
 RUN git config --global user.email "your.email@example.com"
-RUN git add README.md
+RUN git add COPYING
 RUN git commit -m 'init'
 
 CMD ["j.sh", "serve"]
