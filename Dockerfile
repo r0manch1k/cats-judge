@@ -8,31 +8,13 @@ RUN apt install -y build-essential \
         libfile-copy-recursive-perl \
         libxml-parser-perl \
         libpq-dev \
-        unzip
+        unzip \
+    vim mc
     
 WORKDIR /app
 
 COPY . .
-# Create a virtual environment
-ENV VIRTUAL_ENV=/app/venv
-RUN python3 -m venv $VIRTUAL_ENV
-
-# Add the virtual environment's bin directory to the PATH
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip install -r requirements.txt
-COPY dockerfiles/judge/local.xml.template local.xml.template
-COPY dockerfiles/judge/Config.pm.template Config.pm.template
-RUN $VIRTUAL_ENV/bin/python render.py
-RUN rm -rf venv
-RUN rm render.py requirements.txt
-
-
-RUN cp local.xml /app/config/local.xml
-RUN cp Config.pm /app/lib/cats-problem/CATS/Config.pm
-
 ENV comspec="/bin/bash"
-
-
 
 WORKDIR /app/cmd/
 RUN wget https://github.com/r0manch1k/spawner2-cgroups2/releases/download/v0.0.1/sp.zip
@@ -47,5 +29,10 @@ ENV PATH="$PATH:/app/cmd/"
 
 RUN cpanm --notest --installdeps .
 RUN perl install.pl
+RUN git init
+RUN git config --global user.name "Your Name"
+RUN git config --global user.email "your.email@example.com"
+RUN git add README.md
+RUN git commit -m 'init'
 
 CMD ["j.sh", "serve"]
