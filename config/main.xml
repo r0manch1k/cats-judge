@@ -6,7 +6,5 @@
 <include file="config/autodetect.xml"/>
 <include file="config/local.xml"/>
 <include file="config/devenv.xml"/>
-<include file="config/platform.#platform.xml"/>
-<include file="config/local_devenv.xml"/>
 
 </judge>
