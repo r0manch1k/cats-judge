@@ -179,7 +179,7 @@ step 'Detect platform', sub {
 };
 
 step 'Copy configuration from templates', sub {
-    for (qw(autodetect local_devenv)) {
+    for (qw(autodetect)) {
         my $fn = cfg_file("$_.xml");
         my_copy("$fn.template", $fn);
     }
