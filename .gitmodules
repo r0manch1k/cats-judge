@@ -1,6 +1,6 @@
 [submodule "lib/cats-problem"]
 	path = lib/cats-problem
-	url = https://github.com/klenin/cats-problem.git
+	url = https://github.com/mesenev/cats-problem.git
 [submodule "lib/cats-modules"]
 	path = lib/cats-modules
 	url = https://github.com/klenin/cats-modules.git
