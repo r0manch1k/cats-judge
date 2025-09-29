@@ -2,7 +2,7 @@ FROM freepascal/fpc:3.2.2-bookworm-full
 
 RUN apt update
 RUN apt install -y git
-RUN apt install -y python3 python3-venv
+RUN apt install -y python3 python3-venv python3-numpy python3-scipy
 RUN apt install -y build-essential \
         cpanminus \
         libfile-copy-recursive-perl \
