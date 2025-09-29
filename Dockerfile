@@ -28,6 +28,7 @@ RUN chmod +x /app/cmd/create_cgroups.sh
 ENV PATH="$PATH:/app/cmd/"
 
 RUN cpanm --notest --installdeps .
+COPY lib/cats-problem/CATS/Config.pm.template lib/cats-problem/CATS/Config.pm
 RUN perl install.pl
 RUN git init
 RUN git config --global user.name "Your Name"
